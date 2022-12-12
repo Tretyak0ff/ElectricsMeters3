@@ -2,7 +2,7 @@ import os
 from loguru import logger
 from dotenv import load_dotenv, find_dotenv
 from local.utils.settings import Session
-from utils import read_excel, write_electricmeter
+from utils import read_excel, write_electricmeter, read_electricmeter
 load_dotenv(find_dotenv())
 
 
@@ -36,21 +36,13 @@ def filling():
 
 def pulling():
     num_goods = 0
-    session = Session()
     logger.info(f'\n *** Request data from electric meters...'
                 f'\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-    electric_meters = session.query(
-        ElectricMeter, Model, Host, Port, Location, Name
-    ).filter(
-        ElectricMeter.model_id == Model.id,
-        ElectricMeter.name_id == Name.id,
-        ElectricMeter.location_id == Location.id,
-        ElectricMeter.host_id == Host.id,
-        ElectricMeter.port_id == Port.id,
-    ).filter(
-        ElectricMeter.polling == 'True'
-    ).all()
+    electric_meters = read_electricmeter()
     num_reads = len(electric_meters)
+    for electric_meter in electric_meters:
+        logger.warning(electric_meter.TModel.name)
+        indications = get_indications()
 
 
 

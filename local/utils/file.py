@@ -12,12 +12,10 @@ def read_excel(excel_file: str, read_only: bool) -> list:
             location=sheet[row][2].value,
             model=sheet[row][3].value,
             serial=sheet[row][4].value,
-
             typeconnection=sheet[row][5].value,
             host=sheet[row][6].value,
             port=sheet[row][7].value,
             coefficient=sheet[row][8].value,
-
             comments=sheet[row][9].value
         )
         for row in range(2, sheet.max_row + 1)]

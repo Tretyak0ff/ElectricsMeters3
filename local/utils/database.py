@@ -84,14 +84,29 @@ def write_electricmeter(electric_meter: ElectricMeter, index: int) -> int:
             address=electric_meter.address,
             polling=electricmeter['polling'],
             coefficient=electric_meter.coefficient,
+            generation=False,
             created=datetime.now(),
             changed=datetime.now()
         )
         logger.debug(line)
-        # session.add(line)
-        # session.commit()
-        # session.close()
+        session.add(line)
+        session.commit()
+        session.close()
         index += 1
 
         electricmeter.clear()
     return index
+
+
+def read_electricmeter() -> list:
+    session = Session()
+
+    electric_meters = session.query(TElectricMeter, TModel, THost, TPort, TLocation, TName).\
+        filter(
+        TElectricMeter.model_id == TModel.id,
+        TElectricMeter.name_id == TName.id,
+        TElectricMeter.location_id == TLocation.id,
+        TElectricMeter.host_id == THost.id,
+        TElectricMeter.port_id == TPort.id,
+    ).filter(TElectricMeter.polling == 'True').all()
+    return electric_meters
