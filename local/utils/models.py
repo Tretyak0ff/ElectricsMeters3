@@ -35,5 +35,3 @@ class ElectricMeter:
                f'{self.typeconnection} {self.host} {self.port} {self.address}' \
                f'{self.coefficient} ' \
                f'{self.comments}'
-
-

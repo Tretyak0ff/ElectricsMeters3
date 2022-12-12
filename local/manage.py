@@ -1,8 +1,8 @@
 import os
 from loguru import logger
 from dotenv import load_dotenv, find_dotenv
-from local.utils.settings import Session
-from utils import read_excel, write_electricmeter, read_electricmeters, get_indications
+from utils import read_excel, write_electricmeter, read_electricmeters, get_indications, write_indications
+
 load_dotenv(find_dotenv())
 
 
@@ -36,8 +36,8 @@ def filling():
 
 def pulling():
     num_goods = 0
-    model_modbus = ('Панель PCC33MLD', )
-    model_reset = ('Меркурий-230 AR-00 R', )
+    model_modbus = ('Панель PCC33MLD',)
+    model_reset = ('Меркурий-230 AR-00 R',)
 
     logger.info(f'\n *** Request data from electric meters...'
                 f'\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
@@ -46,7 +46,12 @@ def pulling():
     for electric_meter in electric_meters:
         # logger.warning(electric_meter.TModel.name)
         indications = get_indications(electric_meter=electric_meter,
-                                      model_modbus=model_modbus, model_reset=model_reset,)
+                                      model_modbus=model_modbus, model_reset=model_reset, )
+        num_goods = write_indications(electric_meter=electric_meter,
+                                      model_modbus=model_modbus, model_reset=model_reset,
+                                      indications=indications, index=num_goods)
+    logger.info(f'\n *** Data read from {num_goods} of {num_reads} electric meter(s)'
+                f'\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
 
 def main():
@@ -59,7 +64,6 @@ def main():
             pulling()
         case _:
             logger.debug(('хуйня какая-то', number))
-
 
 
 if __name__ == '__main__':
