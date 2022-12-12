@@ -1,6 +1,6 @@
-import logging
+import os
 from datetime import datetime
-
+from dotenv import load_dotenv, find_dotenv
 from loguru import logger
 from sqlalchemy.sql import text
 from sqlalchemy.orm import sessionmaker
@@ -98,9 +98,8 @@ def write_electricmeter(electric_meter: ElectricMeter, index: int) -> int:
     return index
 
 
-def read_electricmeter() -> list:
+def read_electricmeters() -> list:
     session = Session()
-
     electric_meters = session.query(TElectricMeter, TModel, THost, TPort, TLocation, TName).\
         filter(
         TElectricMeter.model_id == TModel.id,
@@ -110,3 +109,26 @@ def read_electricmeter() -> list:
         TElectricMeter.port_id == TPort.id,
     ).filter(TElectricMeter.polling == 'True').all()
     return electric_meters
+
+
+def get_energy(electric_meter):
+    logger.warning(('OTHER', electric_meter.TModel.name))
+
+
+def get_energy_modbus(electric_meter):
+    logger.warning(('MODBUS', electric_meter.TModel.name))
+
+
+def get_indications(electric_meter, model_modbus: tuple, model_reset: tuple):
+    if electric_meter.TModel.name in model_modbus:
+        get_energy_modbus(electric_meter=electric_meter)
+
+    elif electric_meter.TModel.name in model_reset:
+        get_energy(electric_meter=electric_meter)
+
+    else:
+        get_energy(electric_meter=electric_meter)
+
+
+    return electric_meter.TModel.name
+
