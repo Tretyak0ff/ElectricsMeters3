@@ -7,7 +7,7 @@ from utils.database import write_electricmeter, read_electricmeters, get_indicat
 
 load_dotenv(find_dotenv())
 
-logger.add('utils/log/.log', format='{time:DD/MM/YYYY HH:mm:ss}{message}',
+logger.add('local/utils/log/.log', format='{time:DD/MM/YYYY HH:mm:ss}{message}',
            level='INFO',
            rotation='1 week',
            compression='zip')
