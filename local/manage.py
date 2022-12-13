@@ -1,9 +1,16 @@
 import os
+from .utils.database import get_indications, read_electricmeters, write_electricmeter, write_indications
+from .utils.file import read_excel
 from loguru import logger
 from dotenv import load_dotenv, find_dotenv
-from utils import read_excel, write_electricmeter, read_electricmeters, get_indications, write_indications
+
 
 load_dotenv(find_dotenv())
+
+logger.add('utils/log/.log', format='{time:DD/MM/YYYY HH:mm:ss}{message}',
+           level='INFO',
+           rotation='1 week',
+           compression='zip')
 
 
 def get_number() -> int:
