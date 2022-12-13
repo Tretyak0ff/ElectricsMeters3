@@ -4,6 +4,7 @@ from dotenv import load_dotenv, find_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+
 load_dotenv(find_dotenv())
 
 DATABASES_NAME = os.environ.get('DATABASES_NAME')
