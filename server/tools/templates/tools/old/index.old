@@ -1,0 +1,32 @@
+{% extends "layout/basic.html" %}
+
+{% block content %}
+<div class="table table-striped table-sm">
+	<div class="table-list-electric-meters-tr">
+		<div class="table-list-electric-meters-td">Название узла</div>
+		<div class="table-list-electric-meters-td">Место установки</div>
+		<div class="table-list-electric-meters-td">Модель электросчетчика</div>
+		<div class="table-list-electric-meters-td">Заводской номер</div>
+        <div class="table-list-electric-meters-td">Тип соединения</div>
+        <div class="table-list-electric-meters-td">IP:Port</div>
+        <div class="table-list-electric-meters-td">Опрос устройства</div>
+        <div class="table-list-electric-meters-td">Коэффициент трансформации</div>
+	</div>
+        {% for em in ems%}
+        <div class="table-list-electric-meters-tr">
+                <div class="table-list-electric-meters-td">
+                    <a href = "{% url 'location' em.location.pk %}"> {{ em.location.name }} </a>
+                </div>
+                <div class="table-list-electric-meters-td">{{ em.name }}</div>
+                <div class="table-list-electric-meters-td">{{ em.model }}</div>
+                <div class="table-list-electric-meters-td">№{{ em.serial }}</div>
+                <div class="table-list-electric-meters-td">{{ em.typeconnection }}</div>
+
+                <div class="table-list-electric-meters-td">{{ em.host }} : {{ em.port }}</div>
+                <div class="table-list-electric-meters-td">{{ em.polling }}</div>
+                <div class="table-list-electric-meters-td">{{ em.coefficient }}</div>
+        </div>
+        {% endfor %}
+
+</div>
+{% endblock %}

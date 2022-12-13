@@ -1,8 +1,7 @@
 import socket
 from datetime import datetime
-from local.utils.service import get_ping, get_open_channel, get_close_channel, get_serial_number, \
-    get_energy_year, get_energy_month, get_energy_day, get_energy_reset
-from local.utils.service import unpack_serial_number, unpack_data_release, unpack_energy
+from .service.convert import unpack_serial_number, unpack_data_release, unpack_energy
+from .service.command import get_ping, get_open_channel, get_close_channel, get_serial_number, get_energy_year, get_energy_month, get_energy_day, get_energy_reset
 
 
 def get_command_mercury(address: int, command: str) -> bytearray:
@@ -30,8 +29,10 @@ def get_command_mercury(address: int, command: str) -> bytearray:
 
 def exchange_data(electric_meter, command: str) -> bytearray | None:
     """Return datas from Electric Meter"""
-    command = get_command_mercury(address=electric_meter.TElectricMeter.address, command=command)
-    host_port = (str(electric_meter.THost.name), int(electric_meter.TPort.name))
+    command = get_command_mercury(
+        address=electric_meter.TElectricMeter.address, command=command)
+    host_port = (str(electric_meter.THost.name),
+                 int(electric_meter.TPort.name))
     sock_em = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock_em.settimeout(1)
     try:
@@ -46,7 +47,8 @@ def exchange_data(electric_meter, command: str) -> bytearray | None:
 
 
 def get_connect(electric_meter, command: str) -> bool:
-    received_data = exchange_data(electric_meter=electric_meter, command=command)
+    received_data = exchange_data(
+        electric_meter=electric_meter, command=command)
     if received_data is not None:
         connect = True
     else:
@@ -69,7 +71,8 @@ def get_verification(electric_meter) -> bool:
 
 
 def get_data_release(electric_meter) -> bool:
-    received_data = exchange_data(electric_meter=electric_meter, command='serial number')
+    received_data = exchange_data(
+        electric_meter=electric_meter, command='serial number')
     if received_data is not None:
         data_release = unpack_data_release(received_data)
     else:
@@ -78,7 +81,8 @@ def get_data_release(electric_meter) -> bool:
 
 
 def get_energy(electric_meter, command: str) -> list:
-    received_data = exchange_data(electric_meter=electric_meter, command=command)
+    received_data = exchange_data(
+        electric_meter=electric_meter, command=command)
     if received_data is not None:
         indications = unpack_energy(received_data)
     else:

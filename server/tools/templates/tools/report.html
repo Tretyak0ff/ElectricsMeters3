@@ -1,0 +1,105 @@
+{% extends "layout/basic.html" %}
+
+{% block content %}
+
+
+<h2>Отчет расхода электроэнергии</h2>
+
+<form action=""  method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label for="inputPassword6" class="col-form-label">{{ form.months.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.months }}
+            </div>
+            <div class="col-auto">
+                <span id="passwordHelpInline" class="form-text">
+                    Выберете месяц для формирования отчета
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="mb-3">
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label for="inputPassword6" class="col-form-label">{{ form.years.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.years }}
+            </div>
+            <div class="col-auto">
+                <span id="passwordHelpInline" class="form-text">
+                    Выберете год для формирования отчета
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="mb-3">
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label for="inputPassword6" class="form-check-label">{{ form.coefficient.label }} </label>
+            </div>
+            <div class="col-auto">
+                {{ form.coefficient }}
+            </div>
+            <div class="col-auto">
+                <span id="passwordHelpInline" class="form-text">
+                    Выберете для формирования отчета
+                </span>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Сформировать</button>
+</form>
+    <br>
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th> Название узла </th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th> Место установки </th>
+            <th>
+                Электроэнергия за </br> предыдущий период, </br> кВт⋅ч
+            </th>
+            <th>
+                Электроэнергия за </br> текущий период, </br> кВт⋅ч
+            </th>
+            <th>
+                Отношение к</br> предыдущему месяцу, </br> %
+            </th>
+        </tr>
+
+        {% for indication in indications %}
+            <tr>
+                {% ifchanged %}
+                    <td>{{ indication.crt.electricmeter.location }}</td>
+                {% endifchanged %}
+            </tr>
+            <tr>
+                    <td>{{ indication.crt.electricmeter.name }}</td>
+                {% if indication.prev.active_plus == None %}
+                    <td>0,0</td>
+                {% else %}
+                    <td>{{ indication.prev.active_plus }}</td>
+                {% endif %}
+                    <td>{{ indication.crt.active_plus }}</td>
+                {% if indication.pct == None %}
+                    <td>0,0</td>
+                {% else %}
+                    <td>{{ indication.pct }} </td>
+                {% endif %}
+            </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

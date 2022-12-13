@@ -1,18 +1,15 @@
-import os
 from datetime import datetime
-from dotenv import load_dotenv, find_dotenv
 from loguru import logger
 from tabulate import tabulate
 from sqlalchemy.sql import text
 from sqlalchemy.orm import sessionmaker
 from pymodbus.client import ModbusTcpClient
 
-from .log.logger import line_2_reset, line_2, line_1
-from .settings import Session
+from .log.logger import line_1, line_2, line_2_reset
+from .tables import Base, TName, TLocation, TModel, TTypeConnection, THost, TPort, TElectricMeter, TIndications, TPeriods
 from .models import ElectricMeter
+from .settings import Session
 from .transport import get_connect, get_verification, get_data_release, get_energy
-from .tables import Base, TName, TLocation, TModel, TTypeConnection, THost, TPort, TElectricMeter, \
-    TPropertys, TOptions, TPeriods, TIndications
 
 
 def get_field_id(table: Base, filter_value: str, session: sessionmaker) -> id:
@@ -40,8 +37,10 @@ def write_electricmeter(electric_meter: ElectricMeter, index: int) -> int:
 
     electricmeter['location.id'] = get_field_id(table=TLocation, filter_value=str(electric_meter.location),
                                                 session=session)
-    electricmeter['model.id'] = get_field_id(table=TModel, filter_value=electric_meter.model, session=session)
-    electricmeter['name.id'] = get_field_id(table=TName, filter_value=electric_meter.name, session=session)
+    electricmeter['model.id'] = get_field_id(
+        table=TModel, filter_value=electric_meter.model, session=session)
+    electricmeter['name.id'] = get_field_id(
+        table=TName, filter_value=electric_meter.name, session=session)
     if electric_meter.typeconnection is not None:
         electricmeter['typeconnection.id'] = get_field_id(table=TTypeConnection,
                                                           filter_value=electric_meter.typeconnection,
@@ -50,12 +49,14 @@ def write_electricmeter(electric_meter: ElectricMeter, index: int) -> int:
         electricmeter['typeconnection.id'] = None
 
     if electric_meter.host is not None:
-        electricmeter['host.id'] = get_field_id(table=THost, filter_value=electric_meter.host, session=session)
+        electricmeter['host.id'] = get_field_id(
+            table=THost, filter_value=electric_meter.host, session=session)
     else:
         electricmeter['host.id'] = None
 
     if electric_meter.port is not None:
-        electricmeter['port.id'] = get_field_id(table=TPort, filter_value=str(electric_meter.port), session=session)
+        electricmeter['port.id'] = get_field_id(
+            table=TPort, filter_value=str(electric_meter.port), session=session)
     else:
         electricmeter['port.id'] = None
 
@@ -93,9 +94,9 @@ def write_electricmeter(electric_meter: ElectricMeter, index: int) -> int:
             changed=datetime.now()
         )
         logger.debug(line)
-        session.add(line)
-        session.commit()
-        session.close()
+        # session.add(line)
+        # session.commit()
+        # session.close()
         index += 1
 
         electricmeter.clear()
@@ -117,19 +118,26 @@ def read_electricmeters() -> list:
 
 def get_energy_mercury(electric_meter, model_reset: tuple) -> dict:
     global log_line2
-    indications = {'connect': get_connect(electric_meter=electric_meter, command='open channel')}
+    indications = {'connect': get_connect(
+        electric_meter=electric_meter, command='open channel')}
     if not indications['connect']:
-        logger.error(f'\n !!! {electric_meter.THost.name}: {electric_meter.TPort.name} - Error connect!!!')
+        logger.error(
+            f'\n !!! {electric_meter.THost.name}: {electric_meter.TPort.name} - Error connect!!!')
     if indications['connect']:
-        indications['connect'] = get_connect(electric_meter=electric_meter, command='serial number')
-        indications['verification'] = get_verification(electric_meter=electric_meter)
+        indications['connect'] = get_connect(
+            electric_meter=electric_meter, command='serial number')
+        indications['verification'] = get_verification(
+            electric_meter=electric_meter)
         if not indications['verification']:
             logger.error(f'\n !!! {electric_meter.THost.name}: {electric_meter.TPort.name}/'
                          f'{electric_meter.TElectricMeter.address} - Error verification!!!')
         if indications['verification']:
-            logger.debug(f'\n >>> {electric_meter.THost.name}: {electric_meter.TPort.name} - Reading socket...')
-            indications['data_release'] = get_data_release(electric_meter=electric_meter)
-            logger.debug(f'\n >>> Reading address - {electric_meter.TElectricMeter.address}...')
+            logger.debug(
+                f'\n >>> {electric_meter.THost.name}: {electric_meter.TPort.name} - Reading socket...')
+            indications['data_release'] = get_data_release(
+                electric_meter=electric_meter)
+            logger.debug(
+                f'\n >>> Reading address - {electric_meter.TElectricMeter.address}...')
             # Обработка model_reset
             if electric_meter.TModel.name in model_reset:
                 active_plus, active_minus, reactive_plus, reactive_minus = get_energy(
@@ -155,7 +163,8 @@ def get_energy_mercury(electric_meter, model_reset: tuple) -> dict:
                     electric_meter=electric_meter, command='energy day')
                 day = {'active_plus': active_plus, 'active_minus': active_minus,
                        'reactive_plus': reactive_plus, 'reactive_minus': reactive_minus}
-                indications['energy'] = {'year': year, 'month': month, 'day': day}
+                indications['energy'] = {
+                    'year': year, 'month': month, 'day': day}
                 log_line2 = tabulate(line_2(indications=indications),
                                      numalign='right', headers='firstrow', tablefmt="plain")
         log_line1 = tabulate([line_1(electric_meter=electric_meter)],
@@ -167,10 +176,12 @@ def get_energy_mercury(electric_meter, model_reset: tuple) -> dict:
 
 
 def get_energy_modbus(electric_meter) -> dict:
-    client = ModbusTcpClient(electric_meter.THost.name, electric_meter.TPort.name)
+    client = ModbusTcpClient(electric_meter.THost.name,
+                             electric_meter.TPort.name)
     client.connect()
     try:
-        received_data = client.read_holding_registers(electric_meter.TElectricMeter.serial, 2, unit=0)
+        received_data = client.read_holding_registers(
+            electric_meter.TElectricMeter.serial, 2, unit=0)
         # assert (received_data.function_code < 0x80)  # test that we are not an error
         energy = bytearray()
         energy.append(received_data.registers[1].to_bytes(2, 'big')[0])
@@ -181,7 +192,8 @@ def get_energy_modbus(electric_meter) -> dict:
                  'active_minus': 0,
                  'reactive_plus': 0,
                  'reactive_minus': 0}
-        indications = {'connect': True, 'verification': True, 'energy': {'reset': reset}, }
+        indications = {'connect': True, 'verification': True,
+                       'energy': {'reset': reset}, }
     except:
         indications = {'connect': False, 'energy': None, }
     return indications
@@ -191,7 +203,8 @@ def get_indications(electric_meter, model_modbus: tuple, model_reset: tuple) -> 
     if electric_meter.TModel.name in model_modbus:
         indications = get_energy_modbus(electric_meter=electric_meter)
     else:
-        indications = get_energy_mercury(electric_meter=electric_meter, model_reset=model_reset)
+        indications = get_energy_mercury(
+            electric_meter=electric_meter, model_reset=model_reset)
     return indications
 
 
@@ -204,7 +217,8 @@ def write_indications(electric_meter,  model_modbus: tuple, model_reset: tuple,
             if electric_meter.TModel.name in (model_reset or model_modbus):
                 line = TIndications(
                     electricmeter_id=electric_meter.TElectricMeter.id,
-                    period_id=get_field_id(table=TPeriods, filter_value=str('reset'), session=session),
+                    period_id=get_field_id(
+                        table=TPeriods, filter_value=str('reset'), session=session),
                     active_plus=indications['energy']['reset']['active_plus'],
                     active_minus=indications['energy']['reset']['active_minus'],
                     reactive_plus=indications['energy']['reset']['reactive_plus'],
@@ -220,7 +234,8 @@ def write_indications(electric_meter,  model_modbus: tuple, model_reset: tuple,
                 for key in indications['energy'].keys():
                     line = TIndications(
                         electricmeter_id=electric_meter.TElectricMeter.id,
-                        period_id=get_field_id(table=TPeriods, filter_value=str(key), session=session),
+                        period_id=get_field_id(
+                            table=TPeriods, filter_value=str(key), session=session),
                         active_plus=indications['energy'][key]['active_plus'],
                         active_minus=indications['energy'][key]['active_minus'],
                         reactive_plus=indications['energy'][key]['reactive_plus'],

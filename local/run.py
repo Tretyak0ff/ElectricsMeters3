@@ -1,6 +1,4 @@
-
-
-from local.manage import pulling
+from manage import pulling
 
 
 def main():

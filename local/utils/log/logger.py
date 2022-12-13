@@ -1,7 +1,4 @@
-
-
-
-from local.utils.tables import TElectricMeter
+from ..tables import TElectricMeter
 
 
 def line_1(electric_meter: TElectricMeter) -> dict:

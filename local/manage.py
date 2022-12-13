@@ -1,8 +1,8 @@
 import os
-from .utils.database import get_indications, read_electricmeters, write_electricmeter, write_indications
-from .utils.file import read_excel
 from loguru import logger
 from dotenv import load_dotenv, find_dotenv
+from utils.file import read_excel
+from utils.database import write_electricmeter, read_electricmeters, get_indications, write_indications
 
 
 load_dotenv(find_dotenv())
@@ -27,18 +27,23 @@ def get_number() -> int:
     return abs(entered_number)
 
 
+
 def filling():
-    if not os.path.isfile(os.environ.get('NAME_EXCEL_FILE')):
+    if not os.path.isfile(f"local/{ os.environ.get('NAME_EXCEL_FILE') }"):
+
         print(f'Place file "ListElectricMeter.xlsx" to the local folder')
     else:
-        electrics_meters = read_excel(excel_file=os.environ.get('NAME_EXCEL_FILE'), read_only=True)
+        electrics_meters = read_excel(
+            excel_file=f"local/{ os.environ.get('NAME_EXCEL_FILE') }", read_only=True)
         num_reads = 0
         num_records = 0
         for electric_meter in electrics_meters:
             logger.debug(electric_meter)
             num_reads += 1
-            num_records = write_electricmeter(electric_meter=electric_meter, index=num_records)
-        logger.debug(f'Read from file {num_reads} line(s), added to DB {num_records} line(s)')
+            num_records = write_electricmeter(
+                electric_meter=electric_meter, index=num_records)
+        logger.debug(
+            f'Read from file {num_reads} line(s), added to DB {num_records} line(s)')
 
 
 def pulling():
@@ -70,7 +75,7 @@ def main():
         case 2:
             pulling()
         case _:
-            logger.debug(('хуйня какая-то', number))
+            logger.debug(('пока не придумал', number))
 
 
 if __name__ == '__main__':

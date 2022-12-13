@@ -1,0 +1,224 @@
+{% extends "layout/basic.html" %}
+
+{% block content %}
+<h2>Электрические счетчики</h2>
+
+<div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Название узла</th>
+                    <th>Место установки</th>
+                    <th>Модель электросчетчика</th>
+                    <th>Заводской номер</th>
+                    <th>Тип соединения</th>
+                    <th>IP-адрес</th>
+                    <th>Опрос устройства</th>
+                    <th>Коэффициент трансформации</th>
+                </tr>
+            </thead>
+          <tbody>
+            {% for em in ems %}
+                <tr>
+                    <td>{{ em.location.name }}</td>
+                    <td>{{ em.name }}</td>
+                    <td>{{ em.model }}</td>
+                    <td>{{ em.serial }}</td>
+                    <td>{{ em.typeconnection }}</td>
+                    <td>
+                        {% if em.host  == None and em.port == None %}
+                            Отсутствует
+                        {%  else %}
+                            {{ em.host }}:{{ em.port }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if em.polling == False %}
+                        <div class="form-check form-switch">
+                          <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDisabled" disabled>
+                          <label class="form-check-label" for="flexSwitchCheckDisabled">
+<!--                              {{ em.polling }}-->
+                          </label>
+                        </div>
+                        {%  else %}
+                        <div class="form-check form-switch">
+                          <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDisabled" checked disabled>
+                          <label class="form-check-label" for="flexSwitchCheckDisabled">
+<!--                              {{ em.polling }}-->
+                          </label>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>{{ em.coefficient }}</td>
+                </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+</br>
+
+<div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <caption>Параметры энергии на {{ energy.0.created }}</caption>
+                <thead>
+                <tr align="center">
+                        <th></th>
+                        <th colspan="2">Активная энергия, кВт⋅ч</th>
+
+                        </th>
+
+                        <th colspan="2">Реактивная энергия, кВт⋅ч</th>
+                    </tr>
+                    <tr>
+                        <th>Период</th>
+                        <th>Положительная</th>
+                        <th>Отрицательная</th>
+                        </th>
+                        <th>Положительная</th>
+                        <th>Отрицательная</th>
+                    </tr>
+                </thead>
+            {% for e in energy%}
+                <tr>
+                    <td>{{ e.period }}</td>
+                    <td>{{ e.active_plus }}</td>
+                    <td>{{ e.active_minus }}</td>
+                    <td>{{ e.reactive_plus }}</td>
+                    <td>{{ e.reactive_minus }}</td>
+                </tr>
+            {% endfor %}
+                <tbody>
+                </tbody>
+        </table>
+</div>
+
+
+
+<div>
+<!--    </br>-->
+<!--    <h4>Активная энергия</h4>-->
+<!--    <canvas id="Active_energy" width="800" height="200"></canvas>-->
+<!--    -->
+<!--    </br>-->
+<!--    <h4>Реактивная энергия</h4>-->
+<!--    <canvas id="Reactive_energy" width="800" height="200"></canvas>-->
+    <h4>Энергия</h4>
+    <form action=""  method="post">
+    {% csrf_token %}
+        <div id="result"></div>
+        <fieldset>
+            <!--        <legend>{{ form.interval_radio.label }}</legend>-->
+            {% for radio in form.interval_radio %}
+            {{ radio.tag }}
+            <label class="btn btn-primary" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+            {% endfor %}
+        </fieldset>
+    <!--    tag - это сама точка-->
+    <!--    choice_label - надпись-->
+    </form>
+    <br>
+    <canvas id="Energy" width="800" height="200"></canvas>
+
+{% load static %}
+<script src=" {% static 'tools/chartjs/chart.js' %} "></script>
+<script>
+<!--  const data_1 = {-->
+<!--    labels: {{ x_axis | safe }},-->
+<!--    datasets: [-->
+<!--    {-->
+<!--      type: 'line',-->
+<!--      label: 'Положительная',-->
+<!--      backgroundColor: 'rgb(50, 116, 217)',-->
+<!--      borderColor: 'rgb(50, 116, 217)',-->
+<!--      data:  {{ graph_1 | safe }} ,-->
+<!--    },-->
+<!--    {-->
+<!--      type: 'line',-->
+<!--      label: 'Отрицательная',-->
+<!--      backgroundColor: 'rgb(163, 82, 204)',-->
+<!--      borderColor: 'rgb(163, 82, 204)',-->
+<!--      data:  {{ graph_2 | safe }} ,-->
+<!--    },-->
+<!--    ],-->
+<!--  };-->
+
+<!--    const data_2 = {-->
+<!--    labels: {{ x_axis | safe }},-->
+<!--    datasets: [-->
+<!--    {-->
+<!--      type: 'line',-->
+<!--      label: 'Положительная',-->
+<!--      backgroundColor: 'rgb(50, 116, 217)',-->
+<!--      borderColor: 'rgb(50, 116, 217)',-->
+<!--      data:  {{ graph_3 | safe }} ,-->
+<!--    },-->
+<!--    {-->
+<!--      type: 'line',-->
+<!--      label: 'Отрицательная',-->
+<!--      backgroundColor: 'rgb(163, 82, 204)',-->
+<!--      borderColor: 'rgb(163, 82, 204)',-->
+<!--      data:  {{ graph_4 | safe }} ,-->
+<!--    },-->
+<!--    ],-->
+<!--  };-->
+
+    const data_3 = {
+    labels: {{ x_axis | safe }},
+    datasets: [
+    {
+      type: 'line',
+      label: 'Положительная активная',
+      backgroundColor: 'rgb(0, 179, 88)',
+      borderColor: 'rgb(0, 179, 88)',
+      data:  {{ graph_1 | safe }} ,
+    },
+    {
+      type: 'line',
+      label: 'Отрицательная активная',
+      backgroundColor: 'rgb(8, 111, 161)',
+      borderColor: 'rgb(8, 111, 161)',
+      data:  {{ graph_2 | safe }} ,
+    },
+    {
+      type: 'line',
+      label: 'Положительная реактивная',
+      backgroundColor: 'rgb(255, 137, 0)',
+      borderColor: 'rgb(255, 137, 0)',
+      data:  {{ graph_3 | safe }} ,
+    },
+    {
+      type: 'line',
+      label: 'Отрицательная реактивная',
+      backgroundColor: 'rgb(255, 61, 8)',
+      borderColor: 'rgb(255, 61, 8)',
+      data:  {{ graph_4 | safe }} ,
+    },
+    ],
+  };
+</script>
+
+<script>
+<!--  const Active_energy = new Chart(-->
+<!--    document.getElementById('Active_energy'),-->
+<!--    config = {-->
+<!--    data: data_1,-->
+<!--    options: {}-->
+<!--  },-->
+<!--  );-->
+<!--  const Reactive_energy = new Chart(-->
+<!--    document.getElementById('Reactive_energy'),-->
+<!--    config = {-->
+<!--    data: data_2,-->
+<!--    options: {}-->
+<!--  },-->
+<!--  );-->
+  const Energy = new Chart(
+    document.getElementById('Energy'),
+    config = {
+    data: data_3,
+    options: {}
+  },
+  );
+</script>
+
+{% endblock %}
