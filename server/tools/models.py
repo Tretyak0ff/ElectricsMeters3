@@ -112,7 +112,7 @@ class ElectricMeter(models.Model):
                                        verbose_name='Тип соединения')
     host = models.ForeignKey('Host', blank=True, null=True, on_delete=models.PROTECT, verbose_name='IP-адрес')
     port = models.ForeignKey('Port', blank=True, null=True, on_delete=models.PROTECT, verbose_name='IP-порт')
-    address = models.PositiveIntegerField(null=True, verbose_name='ModBus адрес')
+    address = models.PositiveIntegerField(blank=True, null=True, verbose_name='ModBus адрес')
 
     coefficient = models.PositiveIntegerField(null=True, verbose_name='Коэфициент трансформации')
     polling = models.BooleanField(blank=False, null=False, verbose_name='Опрос устройства')
