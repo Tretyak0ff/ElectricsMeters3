@@ -87,13 +87,29 @@ class Port(models.Model):
         ordering = ['-name']
 
 
+class Group(models.Model):
+    name = models.CharField(max_length=100, db_index=True, verbose_name='Группа электросчетчика')
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    changed = models.DateTimeField(default=datetime.now, verbose_name='Дата изменения')
+
+    def __str__(self) -> str:
+        return f'{self.name}'
+
+    class Meta:
+        verbose_name_plural = 'Группы электросчетчиков'
+        verbose_name = 'Группа электросчетчика'
+        ordering = ['-name']
+
+
 class ElectricMeter(models.Model):
+    group = models.ForeignKey('Group', null=True, on_delete=models.PROTECT, verbose_name='Наименование группы')
     name = models.ForeignKey('Name', null=True, on_delete=models.PROTECT, verbose_name='Наименование узла')
     location = models.ForeignKey('Location', null=True, on_delete=models.PROTECT, verbose_name='Место установки')
     model = models.ForeignKey('Model', null=True, on_delete=models.PROTECT, verbose_name='Модель электросчетчика')
     serial = models.PositiveIntegerField(null=True, verbose_name='Серийный номер электросчетчика')
 
-    typeconnection = models.ForeignKey('TypeConnection', blank=True, null=True, on_delete=models.PROTECT,                                   verbose_name='Тип соединения')
+    typeconnection = models.ForeignKey('TypeConnection', blank=True, null=True, on_delete=models.PROTECT,
+                                       verbose_name='Тип соединения')
     host = models.ForeignKey('Host', blank=True, null=True, on_delete=models.PROTECT, verbose_name='IP-адрес')
     port = models.ForeignKey('Port', blank=True, null=True, on_delete=models.PROTECT, verbose_name='IP-порт')
     address = models.PositiveIntegerField(null=True, verbose_name='ModBus адрес')
