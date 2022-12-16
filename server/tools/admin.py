@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Model, Name, Location, TypeConnection, Host, Port, ElectricMeter, Options, Propertys, Periods, \
+from .models import Group, Model, Name, Location, TypeConnection, Host, Port, ElectricMeter, Options, Propertys, Periods, \
     Indications
 
 
@@ -35,6 +35,12 @@ class HostAdmin(admin.ModelAdmin):
 
 
 class PortAdmin(admin.ModelAdmin):
+    list_display = ('name', 'created', 'changed')
+    list_display_links = ('name',)
+    search_fields = ('name',)
+
+
+class GroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'created', 'changed')
     list_display_links = ('name',)
     search_fields = ('name',)
@@ -93,3 +99,4 @@ admin.site.register(ElectricMeter, ElectricMeterAdmin)
 # admin.site.register(Propertys, PropertysAdmin)
 admin.site.register(Periods, PeriodsAdmin)
 admin.site.register(Indications, IndicationsAdmin)
+admin.site.register(Group, GroupAdmin)
