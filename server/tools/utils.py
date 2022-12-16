@@ -4,9 +4,9 @@ import dateutil.relativedelta
 from datetime import datetime, timedelta
 from .models import Propertys, ElectricMeter, Periods, Indications
 
-electric_meter_reset_model = (
-    'Меркурий-230 AR-00 R',
-)
+
+model_modbus = ('Панель PCC33MLD',)
+model_reset = ('Меркурий-230 AR-00 R',)
 
 
 def get_energy_last_old(electricmeter_id: ElectricMeter.pk) -> dict:
@@ -42,7 +42,7 @@ def get_energy_calc(electricmeter_id: ElectricMeter.pk, energy: Indications) -> 
 
 
 def get_energy_last(electricmeter_id: ElectricMeter.pk) -> list:
-    if str(ElectricMeter.objects.filter(pk=electricmeter_id).last().model) in electric_meter_reset_model:
+    if str(ElectricMeter.objects.filter(pk=electricmeter_id).last().model) in model_modbus or model_reset:
         energy_reset = Indications.objects.filter(electricmeter_id=electricmeter_id). \
             filter(period_id=Periods.objects.filter(name='reset').last().pk).last()
         if energy_reset is not None:
@@ -95,7 +95,7 @@ def get_bag_data(selected_interval: str, electricmeter_id: ElectricMeter.pk, opt
 
 
 def get_energy(selected_interval: str, electricmeter_id: ElectricMeter.pk) -> None | list:
-    if str(ElectricMeter.objects.filter(pk=electricmeter_id).last().model) in electric_meter_reset_model:
+    if str(ElectricMeter.objects.filter(pk=electricmeter_id).last().model) in (model_modbus or model_reset):
         period = 4
         match selected_interval:
             case 'year':
@@ -282,8 +282,8 @@ def get_report_indications(selected_year: str, selected_month: str, selected_coe
                                   f'{calendar.monthrange(int(prev_start.year), int(prev_start.month))[1]} '
                                   f'23:59', '%Y-%m-%d %H:%M')
     for electricmeter_id in Indications.objects.values('electricmeter').distinct('electricmeter'):
-        if str(ElectricMeter.objects.filter(pk=electricmeter_id['electricmeter']).last().model) \
-                in electric_meter_reset_model:
+        if str(ElectricMeter.objects.filter(pk=electricmeter_id['electricmeter']).last().model) in (model_modbus or
+                                                                                                    model_reset):
             period = 4
         else:
             period = 1

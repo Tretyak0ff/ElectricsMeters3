@@ -94,9 +94,9 @@ def write_electricmeter(electric_meter: ElectricMeter, index: int) -> int:
             changed=datetime.now()
         )
         logger.debug(line)
-        # session.add(line)
-        # session.commit()
-        # session.close()
+        session.add(line)
+        session.commit()
+        session.close()
         index += 1
 
         electricmeter.clear()
@@ -139,34 +139,43 @@ def get_energy_mercury(electric_meter, model_reset: tuple) -> dict:
             logger.debug(
                 f'\n >>> Reading address - {electric_meter.TElectricMeter.address}...')
             # Обработка model_reset
-            if electric_meter.TModel.name in model_reset:
-                active_plus, active_minus, reactive_plus, reactive_minus = get_energy(
-                    electric_meter=electric_meter, command='energy reset')
+            active_plus, active_minus, reactive_plus, reactive_minus = get_energy(
+                electric_meter=electric_meter, command='energy reset')
+            reset = {'active_plus': active_plus, 'active_minus': active_minus,
+                     'reactive_plus': reactive_plus, 'reactive_minus': reactive_minus}
+            indications['energy'] = {'reset': reset, }
+            log_line2 = tabulate(line_2_reset(indications=indications),
+                                 numalign='right', headers='firstrow', tablefmt="plain")
 
-                reset = {'active_plus': active_plus, 'active_minus': active_minus,
-                         'reactive_plus': reactive_plus, 'reactive_minus': reactive_minus}
-                indications['energy'] = {'reset': reset, }
-                log_line2 = tabulate(line_2_reset(indications=indications),
-                                     numalign='right', headers='firstrow', tablefmt="plain")
-            else:
-                active_plus, active_minus, reactive_plus, reactive_minus = get_energy(
-                    electric_meter=electric_meter, command='energy year')
-                year = {'active_plus': active_plus, 'active_minus': active_minus,
-                        'reactive_plus': reactive_plus, 'reactive_minus': reactive_minus}
 
-                active_plus, active_minus, reactive_plus, reactive_minus = get_energy(
-                    electric_meter=electric_meter, command='energy month')
-                month = {'active_plus': active_plus, 'active_minus': active_minus,
-                         'reactive_plus': reactive_plus, 'reactive_minus': reactive_minus}
-
-                active_plus, active_minus, reactive_plus, reactive_minus = get_energy(
-                    electric_meter=electric_meter, command='energy day')
-                day = {'active_plus': active_plus, 'active_minus': active_minus,
-                       'reactive_plus': reactive_plus, 'reactive_minus': reactive_minus}
-                indications['energy'] = {
-                    'year': year, 'month': month, 'day': day}
-                log_line2 = tabulate(line_2(indications=indications),
-                                     numalign='right', headers='firstrow', tablefmt="plain")
+            # if electric_meter.TModel.name in model_reset:
+            #     active_plus, active_minus, reactive_plus, reactive_minus = get_energy(
+            #         electric_meter=electric_meter, command='energy reset')
+            #
+            #     reset = {'active_plus': active_plus, 'active_minus': active_minus,
+            #              'reactive_plus': reactive_plus, 'reactive_minus': reactive_minus}
+            #     indications['energy'] = {'reset': reset, }
+            #     log_line2 = tabulate(line_2_reset(indications=indications),
+            #                          numalign='right', headers='firstrow', tablefmt="plain")
+            # else:
+            #     active_plus, active_minus, reactive_plus, reactive_minus = get_energy(
+            #         electric_meter=electric_meter, command='energy year')
+            #     year = {'active_plus': active_plus, 'active_minus': active_minus,
+            #             'reactive_plus': reactive_plus, 'reactive_minus': reactive_minus}
+            #
+            #     active_plus, active_minus, reactive_plus, reactive_minus = get_energy(
+            #         electric_meter=electric_meter, command='energy month')
+            #     month = {'active_plus': active_plus, 'active_minus': active_minus,
+            #              'reactive_plus': reactive_plus, 'reactive_minus': reactive_minus}
+            #
+            #     active_plus, active_minus, reactive_plus, reactive_minus = get_energy(
+            #         electric_meter=electric_meter, command='energy day')
+            #     day = {'active_plus': active_plus, 'active_minus': active_minus,
+            #            'reactive_plus': reactive_plus, 'reactive_minus': reactive_minus}
+            #     indications['energy'] = {
+            #         'year': year, 'month': month, 'day': day}
+            #     log_line2 = tabulate(line_2(indications=indications),
+            #                          numalign='right', headers='firstrow', tablefmt="plain")
         log_line1 = tabulate([line_1(electric_meter=electric_meter)],
                              numalign='right', headers='keys', tablefmt="plain")
         logger.debug(f'\n <<< Unpack and write read data to DB...')
@@ -213,38 +222,55 @@ def write_indications(electric_meter,  model_modbus: tuple, model_reset: tuple,
     session = Session()
     if indications['connect']:
         if indications['verification']:
+            line = TIndications(
+                electricmeter_id=electric_meter.TElectricMeter.id,
+                period_id=get_field_id(
+                    table=TPeriods, filter_value=str('reset'), session=session),
+                active_plus=indications['energy']['reset']['active_plus'],
+                active_minus=indications['energy']['reset']['active_minus'],
+                reactive_plus=indications['energy']['reset']['reactive_plus'],
+                reactive_minus=indications['energy']['reset']['reactive_minus'],
+
+                created=datetime.now(),
+                changed=datetime.now()
+            )
+            session.add(line)
+            session.commit()
             index += 1
-            if electric_meter.TModel.name in (model_reset or model_modbus):
-                line = TIndications(
-                    electricmeter_id=electric_meter.TElectricMeter.id,
-                    period_id=get_field_id(
-                        table=TPeriods, filter_value=str('reset'), session=session),
-                    active_plus=indications['energy']['reset']['active_plus'],
-                    active_minus=indications['energy']['reset']['active_minus'],
-                    reactive_plus=indications['energy']['reset']['reactive_plus'],
-                    reactive_minus=indications['energy']['reset']['reactive_minus'],
-
-                    created=datetime.now(),
-                    changed=datetime.now()
-                )
-                session.add(line)
-                session.commit()
-                session.close()
-            else:
-                for key in indications['energy'].keys():
-                    line = TIndications(
-                        electricmeter_id=electric_meter.TElectricMeter.id,
-                        period_id=get_field_id(
-                            table=TPeriods, filter_value=str(key), session=session),
-                        active_plus=indications['energy'][key]['active_plus'],
-                        active_minus=indications['energy'][key]['active_minus'],
-                        reactive_plus=indications['energy'][key]['reactive_plus'],
-                        reactive_minus=indications['energy'][key]['reactive_minus'],
-
-                        created=datetime.now(),
-                        changed=datetime.now(),
-                    )
-                    session.add(line)
-                    session.commit()
-                    session.close()
+            session.close()
     return index
+
+            # if electric_meter.TModel.name in (model_reset or model_modbus):
+            #     line = TIndications(
+            #         electricmeter_id=electric_meter.TElectricMeter.id,
+            #         period_id=get_field_id(
+            #             table=TPeriods, filter_value=str('reset'), session=session),
+            #         active_plus=indications['energy']['reset']['active_plus'],
+            #         active_minus=indications['energy']['reset']['active_minus'],
+            #         reactive_plus=indications['energy']['reset']['reactive_plus'],
+            #         reactive_minus=indications['energy']['reset']['reactive_minus'],
+            #
+            #         created=datetime.now(),
+            #         changed=datetime.now()
+            #     )
+            #     session.add(line)
+            #     session.commit()
+            #     session.close()
+            # else:
+            #     for key in indications['energy'].keys():
+            #         line = TIndications(
+            #             electricmeter_id=electric_meter.TElectricMeter.id,
+            #             period_id=get_field_id(
+            #                 table=TPeriods, filter_value=str(key), session=session),
+            #             active_plus=indications['energy'][key]['active_plus'],
+            #             active_minus=indications['energy'][key]['active_minus'],
+            #             reactive_plus=indications['energy'][key]['reactive_plus'],
+            #             reactive_minus=indications['energy'][key]['reactive_minus'],
+            #
+            #             created=datetime.now(),
+            #             changed=datetime.now(),
+            #         )
+            #         session.add(line)
+            #         session.commit()
+            #         session.close()
+

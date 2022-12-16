@@ -6,8 +6,8 @@ from loguru import logger
 
 from .models import ElectricMeter, Location, Propertys
 from .forms import LocationForm, ReportForm, IntervalForm
-from .utils import get_graph_options, get_energy_last_old, get_energy_last, electric_meter_reset_model, \
-    get_graph_coordinates, get_report_indications
+from .utils import get_energy_last, get_graph_coordinates, get_report_indications
+from .report2.utils import get_report2
 
 
 class LocationCreateView(CreateView):
@@ -42,9 +42,28 @@ def report(request) -> render:
 
     context = {'form': report_form,
                'indications': indications,
-               'indications_len': indications_len,
+               # 'indications_len': indications_len,
                }
     return render(request, 'tools/report.html', context)
+
+
+def report2(request) -> render:
+    report_form = ReportForm(request.POST or None)
+    energy_generations = []
+    if report_form.is_valid():
+        energy_generations, energy_consumptions = get_report2(
+            selected_year=report_form.cleaned_data.get("years"),
+            selected_month=report_form.cleaned_data.get("months"),
+            selected_coefficient=report_form.cleaned_data.get("coefficient"), )
+
+        logger.debug(energy_generations)
+    context = {'form': report_form,
+               'generations': energy_generations,
+
+               # 'indications': power_generation,
+               # 'indications_len': indications_len,
+               }
+    return render(request, 'tools/report2.html', context)
 
 
 def by_location(request, location_id) -> render:

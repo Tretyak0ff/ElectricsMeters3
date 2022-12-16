@@ -7,7 +7,7 @@ from utils.database import write_electricmeter, read_electricmeters, get_indicat
 
 load_dotenv(find_dotenv())
 
-logger.add('local/utils/log/.log', format='{time:DD/MM/YYYY HH:mm:ss}{message}',
+logger.add('utils/log/.log', format='{time:DD/MM/YYYY HH:mm:ss}{message}',
            level='INFO',
            rotation='1 week',
            compression='zip')
@@ -30,7 +30,6 @@ def get_number() -> int:
 
 def filling():
     if not os.path.isfile(f"local/{ os.environ.get('NAME_EXCEL_FILE') }"):
-
         print(f'Place file "ListElectricMeter.xlsx" to the local folder')
     else:
         electrics_meters = read_excel(
@@ -56,7 +55,6 @@ def pulling():
     electric_meters = read_electricmeters()
     num_reads = len(electric_meters)
     for electric_meter in electric_meters:
-        # logger.warning(electric_meter.TModel.name)
         indications = get_indications(electric_meter=electric_meter,
                                       model_modbus=model_modbus, model_reset=model_reset, )
         num_goods = write_indications(electric_meter=electric_meter,
@@ -68,14 +66,13 @@ def pulling():
 
 def main():
     number = get_number()
-    logger.debug(('select number', number))
     match number:
         case 1:
             filling()
         case 2:
             pulling()
         case _:
-            logger.debug(('пока не придумал', number))
+            logger.debug(('Не корректный номер', number))
 
 
 if __name__ == '__main__':
