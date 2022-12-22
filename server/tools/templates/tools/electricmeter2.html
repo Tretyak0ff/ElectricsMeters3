@@ -1,7 +1,7 @@
 {% extends "layout/basic.html" %}
 
 {% block content %}
-<h2>Электрические счетчики</h2>
+<h2 xmlns="http://www.w3.org/1999/html">Электрические счетчики</h2>
 
 <div class="table-responsive">
         <table class="table table-striped table-sm">
@@ -94,73 +94,51 @@
 
 
 <div>
-<!--    </br>-->
-<!--    <h4>Активная энергия</h4>-->
-<!--    <canvas id="Active_energy" width="800" height="200"></canvas>-->
-<!--    -->
-<!--    </br>-->
-<!--    <h4>Реактивная энергия</h4>-->
-<!--    <canvas id="Reactive_energy" width="800" height="200"></canvas>-->
     <h4>Энергия</h4>
     <form action=""  method="post">
     {% csrf_token %}
-        <div id="result"></div>
-        <fieldset>
-            <!--        <legend>{{ form.interval_radio.label }}</legend>-->
-            {% for radio in form.interval_radio %}
-            {{ radio.tag }}
-            <label class="btn btn-primary" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
-            {% endfor %}
-        </fieldset>
-    <!--    tag - это сама точка-->
-    <!--    choice_label - надпись-->
+
+        <div class="mb-3">
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label for="inputPassword6" class="col-form-label">{{ date.previous.label }}</label>
+                </div>
+                <div class="col-auto">
+                    {{ date.previous }}
+                </div>
+                <div class="col-auto">
+                    <label for="inputPassword6" class="col-form-label"> {{ date.current.label }}</label>
+                </div>
+                <div class="col-auto">
+                    {{ date.current }}
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Отобразить</button>
     </form>
-    <br>
+    </br>
+</div>
+
+<!--    <h4>Энергия</h4>-->
+<!--    <form action=""  method="post">-->
+<!--    {% csrf_token %}-->
+<!--        <div id="result"></div>-->
+<!--        <fieldset>-->
+<!--            &lt;!&ndash;        <legend>{{ form.interval_radio.label }}</legend>&ndash;&gt;-->
+<!--            {% for radio in form.interval_radio %}-->
+<!--            {{ radio.tag }}-->
+<!--            <label class="btn btn-primary" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>-->
+<!--            {% endfor %}-->
+<!--        </fieldset>-->
+<!--    &lt;!&ndash;    tag - это сама точка&ndash;&gt;-->
+<!--    &lt;!&ndash;    choice_label - надпись&ndash;&gt;-->
+<!--    </form>-->
+<!--    <br>-->
     <canvas id="Energy" width="800" height="200"></canvas>
 
 {% load static %}
 <script src=" {% static 'tools/chartjs/chart.js' %} "></script>
 <script>
-<!--  const data_1 = {-->
-<!--    labels: {{ x_axis | safe }},-->
-<!--    datasets: [-->
-<!--    {-->
-<!--      type: 'line',-->
-<!--      label: 'Положительная',-->
-<!--      backgroundColor: 'rgb(50, 116, 217)',-->
-<!--      borderColor: 'rgb(50, 116, 217)',-->
-<!--      data:  {{ graph_1 | safe }} ,-->
-<!--    },-->
-<!--    {-->
-<!--      type: 'line',-->
-<!--      label: 'Отрицательная',-->
-<!--      backgroundColor: 'rgb(163, 82, 204)',-->
-<!--      borderColor: 'rgb(163, 82, 204)',-->
-<!--      data:  {{ graph_2 | safe }} ,-->
-<!--    },-->
-<!--    ],-->
-<!--  };-->
-
-<!--    const data_2 = {-->
-<!--    labels: {{ x_axis | safe }},-->
-<!--    datasets: [-->
-<!--    {-->
-<!--      type: 'line',-->
-<!--      label: 'Положительная',-->
-<!--      backgroundColor: 'rgb(50, 116, 217)',-->
-<!--      borderColor: 'rgb(50, 116, 217)',-->
-<!--      data:  {{ graph_3 | safe }} ,-->
-<!--    },-->
-<!--    {-->
-<!--      type: 'line',-->
-<!--      label: 'Отрицательная',-->
-<!--      backgroundColor: 'rgb(163, 82, 204)',-->
-<!--      borderColor: 'rgb(163, 82, 204)',-->
-<!--      data:  {{ graph_4 | safe }} ,-->
-<!--    },-->
-<!--    ],-->
-<!--  };-->
-
     const data_3 = {
     labels: {{ x_axis | safe }},
     datasets: [

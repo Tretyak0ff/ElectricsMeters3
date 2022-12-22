@@ -56,9 +56,6 @@
 </form>
     <br>
 
-        {% for generation in generations %}
-           {{generations}} </br>
-        {% endfor %}
 
 <div class="table-responsive">
     <table class="table table-striped table-sm">
@@ -80,35 +77,68 @@
                 Отношение к</br> предыдущему месяцу, </br> %
             </th>
         </tr>
+  <!--    <h3>Генерация</h3>-->
         <tr>
             <th colspan="3">
                 Выработка электроэнергии
             <th>
         </tr>
         {% for generation in generations %}
-            generation.current.electricmeter.location </br>
-            <tr>
-                {% ifchanged %}
-                    <td>{{ energy_generation.energy_current.electricmeter.location }}</td>
-                {% endifchanged %}
-            </tr>
-            <tr>
-                    <td>{{ energy_generation.energy_current.electricmeter.name }}</td>
-                {% if energy_generation.energy_previous.active_plus == None %}
-                    <td>0,0</td>
-                {% else %}
-                    <td>{{ energy_generation.energy_previous.active_plus }}</td>
-                {% endif %}
-                    <td>{{ energy_generation.energy_current.active_plus }}</td>
-                {% if energy_generation.pct == None %}
-                    <td>0,0</td>
-                {% else %}
-                    <td>{{ energy_generation.pct }} </td>
-                {% endif %}
-            </tr>
-
+        <tr>
+            {% ifchanged %}
+                <td> {{generation.location}}</td>
+            {% endifchanged %}
+        </tr>
+        <tr>
+            <td> {{generation.name}}  </td>
+            {% if generation.previous == None %}<td>0,0</td>{% else %}<td>{{ generation.previous }}</td>{% endif %}
+            {% if generation.current == None %}<td>0,0</td>{% else %}<td>{{ generation.current }}</td>{% endif %}
+            {% if generation.percent == None %}<td>0,0</td>{% else %}<td>{{generation.percent }}</td>{% endif %}
+        </tr>
+        {% endfor %}
+<!--    <h3>Потребление</h3>-->
+        <tr>
+            <th colspan="3">
+                Потребление электроэнергии
+            <th>
+        </tr>
+        {% for consumption in consumptions %}
+        <tr>
+            {% ifchanged %}
+                <td> {{consumption.location}}</td>
+            {% endifchanged %}
+        </tr>
+        <tr>
+            <td> {{consumption.name}}</td>
+            {% if consumption.previous == None %}<td>0,0</td>{% else %}<td>{{ consumption.previous }}</td>{% endif %}
+            {% if consumption.current == None %}<td>0,0</td>{% else %}<td>{{ consumption.current }}</td>{% endif %}
+            {% if consumption.percent == None %}<td>0,0</td>{% else %}<td>{{consumption.percent }}</td>{% endif %}
+        </tr>
         {% endfor %}
         </tbody>
     </table>
 </div>
 {% endblock %}
+<!--        {% for generation in generations %}-->
+<!--            generation.current.electricmeter.location </br>-->
+<!--            <tr>-->
+<!--                {% ifchanged %}-->
+<!--                    <td>{{ energy_generation.energy_current.electricmeter.location }}</td>-->
+<!--                {% endifchanged %}-->
+<!--            </tr>-->
+<!--            <tr>-->
+<!--                    <td>{{ energy_generation.energy_current.electricmeter.name }}</td>-->
+<!--                {% if energy_generation.energy_previous.active_plus == None %}-->
+<!--                    <td>0,0</td>-->
+<!--                {% else %}-->
+<!--                    <td>{{ energy_generation.energy_previous.active_plus }}</td>-->
+<!--                {% endif %}-->
+<!--                    <td>{{ energy_generation.energy_current.active_plus }}</td>-->
+<!--                {% if energy_generation.pct == None %}-->
+<!--                    <td>0,0</td>-->
+<!--                {% else %}-->
+<!--                    <td>{{ energy_generation.pct }} </td>-->
+<!--                {% endif %}-->
+<!--            </tr>-->
+
+<!--        {% endfor %}-->

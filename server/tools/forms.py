@@ -66,3 +66,14 @@ class IntervalForm(forms.Form):
         label='Период',
         widget=forms.RadioSelect(attrs={'class': 'btn-check', 'onchange': 'form.submit()'})
     )
+
+
+class DateInputForm(forms.Form):
+    previous = forms.DateField(
+            label='C',
+            widget=forms.widgets.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        )
+    current = forms.DateField(
+            label='По',
+            widget=forms.widgets.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        )

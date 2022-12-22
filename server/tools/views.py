@@ -5,9 +5,11 @@ from django.views.generic.edit import CreateView
 from loguru import logger
 
 from .models import ElectricMeter, Location, Propertys
-from .forms import LocationForm, ReportForm, IntervalForm
+from .forms import LocationForm, ReportForm, IntervalForm, DateInputForm
 from .utils import get_energy_last, get_graph_coordinates, get_report_indications
 from .report2.utils import get_report2
+
+from .graph2.utils import get_data, get_coordinates
 
 
 class LocationCreateView(CreateView):
@@ -50,18 +52,16 @@ def report(request) -> render:
 def report2(request) -> render:
     report_form = ReportForm(request.POST or None)
     energy_generations = []
+    energy_consumptions = []
     if report_form.is_valid():
         energy_generations, energy_consumptions = get_report2(
             selected_year=report_form.cleaned_data.get("years"),
             selected_month=report_form.cleaned_data.get("months"),
             selected_coefficient=report_form.cleaned_data.get("coefficient"), )
 
-        logger.debug(energy_generations)
     context = {'form': report_form,
                'generations': energy_generations,
-
-               # 'indications': power_generation,
-               # 'indications_len': indications_len,
+               'consumptions': energy_consumptions,
                }
     return render(request, 'tools/report2.html', context)
 
@@ -84,7 +84,6 @@ def by_electricmeter(request, location_id, electricmeter_id: ElectricMeter) -> r
             selected_interval=selected_interval,
             electricmeter_id=electricmeter_id
         )
-
     context = {'ems': ems,
                'energy': energy,
                'form': interval_form,
@@ -96,3 +95,28 @@ def by_electricmeter(request, location_id, electricmeter_id: ElectricMeter) -> r
                }
 
     return render(request, 'tools/electricmeter.html', context)
+
+
+def by_electricmeter2(request, location_id, electricmeter_id: ElectricMeter) -> render:
+    ems = ElectricMeter.objects.filter(pk=electricmeter_id)
+    energy = get_energy_last(electricmeter_id)
+    x_axis, graph_1, graph_2, graph_3, graph_4 = [], [], [], [], []
+
+    date_form = DateInputForm(request.POST or None)
+    if date_form.is_valid():
+        x_axis, graph_1, graph_2, graph_3, graph_4 = get_coordinates(
+            date1=date_form.data.get('previous'),
+            date2=date_form.data.get('current'),
+            electricmeter_id=electricmeter_id)
+
+    context = {'ems': ems,
+               'energy': energy,
+               'x_axis': x_axis,
+               'graph_1': graph_1,
+               'graph_2': graph_2,
+               'graph_3': graph_3,
+               'graph_4': graph_4,
+               'date': date_form,
+               }
+
+    return render(request, 'tools/electricmeter2.html', context)

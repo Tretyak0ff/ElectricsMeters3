@@ -3,11 +3,10 @@ import calendar
 from datetime import datetime, timedelta
 import dateutil.relativedelta
 from ..models import Propertys, ElectricMeter, Periods, Indications
-from ..utils import model_modbus, model_reset
 
 
 def get_indications(electricmeter_id: int, coefficient: int,
-                    created_start: datetime, created_stop: datetime) -> Indications | None:
+                    created_start: datetime, created_stop: datetime) -> float | None:
     ind_first = Indications.objects. \
         filter(electricmeter=electricmeter_id).filter(period=4).order_by('created'). \
         filter(created__gte=created_start).filter(created__lte=created_stop). \
@@ -18,13 +17,7 @@ def get_indications(electricmeter_id: int, coefficient: int,
         filter(active_plus__isnull=False).last()
 
     if ind_first and ind_last:
-        energy = Indications(
-            electricmeter_id=electricmeter_id, period_id=4,
-            active_plus=round((ind_last.active_plus - ind_first.active_plus) * coefficient, 1),
-            active_minus=round((ind_last.active_minus - ind_first.active_minus) * coefficient, 1),
-            reactive_plus=round((ind_last.reactive_plus - ind_first.reactive_plus) * coefficient, 1),
-            reactive_minus=round((ind_last.reactive_minus - ind_first.reactive_minus) * coefficient, 1),
-            created=datetime.now(), changed=datetime.now())
+        energy = round((ind_last.active_plus - ind_first.active_plus) * coefficient, 1)
     else:
         energy = None
     return energy
@@ -45,12 +38,14 @@ def get_report2(selected_year: str, selected_month: str, selected_coefficient: b
 
     electricmeter_id_generation = [g['id'] for g in ElectricMeter.objects.values('id').filter(generation=True).all()]
     for electricmeter_id in Indications.objects.values('electricmeter').distinct('electricmeter').all():
+        location = ElectricMeter.objects.filter(pk=electricmeter_id['electricmeter']).last().location.name
+        name = ElectricMeter.objects.filter(pk=electricmeter_id['electricmeter']).last().name.name
 
         if selected_coefficient:
             coefficient = ElectricMeter.objects.filter(pk=electricmeter_id['electricmeter']).last().coefficient
         else:
             coefficient = 1
-
+        logger.error(coefficient)
         if electricmeter_id['electricmeter'] in electricmeter_id_generation:
 
             energy_previous = get_indications(electricmeter_id=electricmeter_id['electricmeter'],
@@ -60,11 +55,12 @@ def get_report2(selected_year: str, selected_month: str, selected_coefficient: b
                                              coefficient=coefficient,
                                              created_start=crt_start, created_stop=crt_stop)
             try:
-                energy_percent = round(energy_current.active_plus / energy_previous.active_plus * 100, 1)
+                energy_percent = round(energy_current / energy_previous * 100, 1)
             except:
                 energy_percent = None
-
-            energy_generation.append({'previous': energy_previous,
+            energy_generation.append({'location': location,
+                                      'name': name,
+                                      'previous': energy_previous,
                                       'current': energy_current,
                                       'percent': energy_percent})
         else:
@@ -75,12 +71,12 @@ def get_report2(selected_year: str, selected_month: str, selected_coefficient: b
                                              coefficient=coefficient,
                                              created_start=crt_start, created_stop=crt_stop)
             try:
-                energy_percent = round(energy_current.active_plus / energy_previous.active_plus * 100, 1)
+                energy_percent = round(energy_current / energy_previous * 100, 1)
             except:
                 energy_percent = None
-
-            energy_consumption.append({'previous': energy_previous,
+            energy_consumption.append({'location': location,
+                                       'name': name,
+                                       'previous': energy_previous,
                                        'current': energy_current,
                                        'percent': energy_percent})
     return energy_generation, energy_consumption
-
