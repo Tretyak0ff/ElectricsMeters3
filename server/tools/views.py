@@ -8,8 +8,7 @@ from .models import ElectricMeter, Location, Propertys
 from .forms import LocationForm, ReportForm, IntervalForm, DateInputForm
 from .utils import get_energy_last, get_graph_coordinates, get_report_indications
 from .report2.utils import get_report2
-
-from .graph2.utils import get_data, get_coordinates
+from .graph2.utils import get_coordinates
 
 
 class LocationCreateView(CreateView):

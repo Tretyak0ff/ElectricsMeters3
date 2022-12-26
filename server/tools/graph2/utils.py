@@ -2,6 +2,7 @@ from loguru import logger
 from datetime import datetime
 from ..models import Indications, ElectricMeter
 
+
 def get_interval(date_start: datetime, date_stop: datetime) -> str:
     interval = []
     if date_start.month == date_stop.month:
@@ -19,24 +20,24 @@ def get_data(date1: str, date2: str) -> dict:
     date2 = datetime.strptime(f'{date2}', '%Y-%m-%d')
 
     if date1 > date2:
-        date_start = datetime.strptime(f'{date2.year}-{date2.month}-{date2.day} 00:00', '%Y-%m-%d %H:%M')
-        date_stop = datetime.strptime(f'{date1.year}-{date1.month}-{date1.day} 23:59', '%Y-%m-%d %H:%M')
+        date_start = datetime.strptime(f'{date2.date()} 00:00', '%Y-%m-%d %H:%M')
+        date_stop = datetime.strptime(f'{date1.date()} 23:59', '%Y-%m-%d %H:%M')
         interval = get_interval(date_start=date_start, date_stop=date_stop)
 
     if date2 > date1:
-        date_start = datetime.strptime(f'{date1.year}-{date1.month}-{date1.day} 00:00', '%Y-%m-%d %H:%M')
-        date_stop = datetime.strptime(f'{date2.year}-{date2.month}-{date2.day} 23:59', '%Y-%m-%d %H:%M')
+        date_start = datetime.strptime(f'{date1.date()} 00:00', '%Y-%m-%d %H:%M')
+        date_stop = datetime.strptime(f'{date2.date()} 23:59', '%Y-%m-%d %H:%M')
         interval = get_interval(date_start=date_start, date_stop=date_stop)
 
     if date1 == date2:
-        date_start = datetime.strptime(f'{date1.year}-{date1.month}-{date1.day} 00:00', '%Y-%m-%d %H:%M')
-        date_stop = datetime.strptime(f'{date2.year}-{date2.month}-{date2.day} 23:59', '%Y-%m-%d %H:%M')
+        date_start = datetime.strptime(f'{date1.date()} 00:00', '%Y-%m-%d %H:%M')
+        date_stop = datetime.strptime(f'{date2.date()} 23:59', '%Y-%m-%d %H:%M')
         interval = 'day'
 
     return {'date_start': date_start,
             'date_stop': date_stop,
             'interval': interval,
-    }
+            }
 
 
 def get_energy(date_start: datetime, date_stop: datetime, electricmeter_id: ElectricMeter.pk) -> None | list:
@@ -104,7 +105,7 @@ def get_coordinates(date1: str, date2: str, electricmeter_id: ElectricMeter.pk) 
 
                 return x_axis_delta, active_plus_delta, active_minus_delta, reactive_plus_delta, reactive_minus_delta
             case 'day':
-                x_axis = [f'{(time.created + timedelta(hours=3)).hour}:0{time.created.minute}' for time in
+                x_axis = [f'{time.created.hour}:0{time.created.minute}' for time in
                           all_energy
                           if (time.created.hour > 0) and (time.created.minute == 0)]
                 active_plus = [energy.active_plus * coefficient for energy in all_energy
@@ -133,6 +134,3 @@ def get_coordinates(date1: str, date2: str, electricmeter_id: ElectricMeter.pk) 
         reactive_plus = []
         reactive_minus = []
         return x_axis, active_plus, active_minus, reactive_plus, reactive_minus
-
-
-

@@ -45,7 +45,6 @@ def get_report2(selected_year: str, selected_month: str, selected_coefficient: b
             coefficient = ElectricMeter.objects.filter(pk=electricmeter_id['electricmeter']).last().coefficient
         else:
             coefficient = 1
-        logger.error(coefficient)
         if electricmeter_id['electricmeter'] in electricmeter_id_generation:
 
             energy_previous = get_indications(electricmeter_id=electricmeter_id['electricmeter'],
